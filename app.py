@@ -12,7 +12,7 @@
 # 
 # 
 
-# In[ ]:
+# In[1]:
 
 
 # Import all required libraries
@@ -25,7 +25,7 @@ import pandas as pd
 import plotly.graph_objs as go
 
 
-# In[ ]:
+# In[2]:
 
 
 # Create dataset of Eurostat data
@@ -41,9 +41,9 @@ countries = euro_data['GEO'].unique()
 countries.sort()
 
 
-# ## Dashboard 1
+# ## Dashboards and Inputs
 
-# In[ ]:
+# In[3]:
 
 
 app = dash.Dash(__name__)
@@ -52,11 +52,11 @@ app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
 
 euro_data1 = euro_data[euro_data['UNIT'] == 'Current prices, million euro']
 
-#Layout of inputs - Dashboard 1
+#Layout of inputs
 app.layout = html.Div([
     html.Div([
 
-        #Input 1  - Dropdown with values of Indicators from dataset
+        #Input 1 (for Dashboard 1) - Dropdown with values of Indicators from dataset
         html.Div([
             dcc.Dropdown( 
                 id='xaxis-column1',
@@ -64,37 +64,63 @@ app.layout = html.Div([
                 placeholder="Select x-axis"
             )
         ],
-        style={'width': '50%', 'display': 'inline-block'}),
+        style={'width': '40%', 'display': 'inline-block'}),
 
-        #Input 2  - Dropdown with values of Indicators from dataset
+        #Input 2 (for Dashboard 1) - Dropdown with values of Indicators from dataset
         html.Div([
             dcc.Dropdown( 
                 id='yaxis-column1',
                 options=[{'label': i, 'value': i} for i in indicators],
                 placeholder="Select y-axis"
             )
-        ],style={'width': '50%', 'float': 'right', 'display': 'inline-block'})
+        ],style={'width': '40%', 'float': 'right', 'display': 'inline-block'})
     ]),
 
-    dcc.Graph(id='indicator-graphic'), #Empty graph
+    dcc.Graph(id='dashboard1'), #Empty graph (for Dashboard 1)
 
-    #Input 3 - Slider with values of years from dataset
-    dcc.Slider( 
-        id='year--slider1',
+    #Input 3 (for Dashboard 1) - Slider with values of years from dataset
+    html.Div(dcc.Slider( 
+        id='year--slider',
         min=euro_data['TIME'].min(),
         max=euro_data['TIME'].max(),
         value=euro_data['TIME'].max(),
         step=None,
-        marks={str(time): str(time) for time in euro_data['TIME'].unique()}
-    )
+        marks={str(time): str(time) for time in euro_data['TIME'].unique()},
+    ), style={'marginRight': 50, 'marginLeft': 110},),
+    
+    html.Div([
+
+        #Input 1 (for Dashboard 2)  - Dropdown with values of Indicators from dataset
+        html.Div([
+            dcc.Dropdown( 
+                id='yaxis-column2',
+                options=[{'label': i, 'value': i} for i in indicators],
+                placeholder="Select y-axis"
+            )
+        ],
+        style={'width': '40%', 'marginTop': 45, 'display': 'inline-block'}),
+
+        #Input 2 (for Dashboard 2)  - Dropdown with values of Countries from dataset
+        html.Div([
+            dcc.Dropdown( 
+                id='country-dropdown',
+                options=[{'label': i, 'value': i} for i in countries],
+                placeholder="Select country"
+            )
+        ],style={'width': '40%', 'marginTop': 45, 'float': 'right', 'display': 'inline-block'})
+    ]),
+
+    dcc.Graph(id='dashboard2'), #Empty graph (for Dashboard 2)
+    
 ])
 
-#Callback function to create the required graph based on the inputs
+
+#Callback function to create the required dashboard 1 based on the inputs
 @app.callback(
-    dash.dependencies.Output('indicator-graphic', 'figure'),
+    dash.dependencies.Output('dashboard1', 'figure'),
     [dash.dependencies.Input('xaxis-column1', 'value'),
      dash.dependencies.Input('yaxis-column1', 'value'),
-     dash.dependencies.Input('year--slider1', 'value')])
+     dash.dependencies.Input('year--slider', 'value')])
 
 def update_graph(xaxis_column_name, yaxis_column_name,
                  year_value):
@@ -109,7 +135,7 @@ def update_graph(xaxis_column_name, yaxis_column_name,
             #Y-Axis based on column selected from filter
             mode='markers',
             marker={
-                'size': 10,
+                'size': 12,
                 'opacity': 0.8,
                 'line': {'width': 0.5, 'color': 'white'}
             }
@@ -123,45 +149,17 @@ def update_graph(xaxis_column_name, yaxis_column_name,
                 'title': yaxis_column_name,
                 'type': 'linear'
             },
-            margin={'l': 40, 'b': 40, 't': 10, 'r': 0},
+            margin={'l': 100, 'b': 50, 't': 25, 'r': 50},
             hovermode='closest'
         )
     }
 
-#Layout of inputs - Dashboard 2
-app.layout = html.Div([
-    html.Div([
 
-        #Input 1  - Dropdown with values of Indicators from dataset
-        html.Div([
-            dcc.Dropdown( 
-                id='xaxis-column2',
-                options=[{'label': i, 'value': i} for i in indicators],
-                placeholder="Select x-axis"
-            )
-        ],
-        style={'width': '50%', 'display': 'inline-block'}),
-
-        #Input 2  - Dropdown with values of Countries from dataset
-        html.Div([
-            dcc.Dropdown( 
-                id='country-dropdown2',
-                options=[{'label': i, 'value': i} for i in countries],
-                placeholder="Select country"
-            )
-        ],style={'width': '50%', 'float': 'right', 'display': 'inline-block'})
-    ]),
-
-    dcc.Graph(id='indicator-graphic2'), #Empty graph
-
-    
-])
-
-#Callback function to create the required graph based on the inputs
+#Callback function to create the required dashboard 2 based on the inputs
 @app.callback(
-    dash.dependencies.Output('indicator-graphic2', 'figure'),
-    [dash.dependencies.Input('xaxis-column2', 'value'),
-     dash.dependencies.Input('country-dropdown2', 'value')])
+    dash.dependencies.Output('dashboard2', 'figure'),
+    [dash.dependencies.Input('yaxis-column2', 'value'),
+     dash.dependencies.Input('country-dropdown', 'value')])
 
 def update_graph(xaxis_column_name, yaxis_column_name):
     
@@ -169,27 +167,27 @@ def update_graph(xaxis_column_name, yaxis_column_name):
         
     return {
         'data': [go.Scatter(
-            x=euro_data_yearly[euro_data_yearly['NA_ITEM'] == xaxis_column_name]['Value'],
-            #X-Axis based on column selected from filter
-            y=euro_data_yearly['TIME'].unique(),
+            x=euro_data_yearly['TIME'].unique(),
+            #X-Axis based on Year data in source data
+            y=euro_data_yearly[euro_data_yearly['NA_ITEM'] == xaxis_column_name]['Value'],
             #Y-Axis based on column selected from filter
             mode='lines',
             marker={
-                'size': 10,
-                'opacity': 0.9,
+                'size': 12,
+                'opacity': 0.8,
                 'line': {'width': 0.5, 'color': 'white'}
             }
         )],
         'layout': go.Layout(
             xaxis={
-                'title': xaxis_column_name,
-                'type': 'linear'
-            },
-            yaxis={
                 'title': 'Year',
                 'type': 'linear'
             },
-            margin={'l': 40, 'b': 40, 't': 10, 'r': 0},
+            yaxis={
+                'title': xaxis_column_name,
+                'type': 'linear'
+            },
+            margin={'l': 100, 'b': 50, 't': 25, 'r': 50},
             hovermode='closest'
         )
     }
